@@ -1,0 +1,45 @@
+<title>Trader Insights - Order History</title>
+<link rel="stylesheet" media="screen" href="static/bootstrap.min.css">
+<link rel="stylesheet" href="static/bootstrap-theme.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container">
+	<form action="{{url_for('getQuote',name=name)}}" method="post" role="form">
+		{{ form.csrf }}
+		<div class="form-group">
+			<div>
+				<button type="submit" class="btn btn-profile" name="profile" value="Profile">Profile</button>
+				<button type="submit" class="btn btn-Request" name="request" value="Request">Request a Quote</button>
+				<button type="submit" class="btn btn-History" name="history" value="History">Quote History</button>
+				<button type="submit" class="btn btn-logout" name="logout" value="Logout">Logout</button>
+			</div>
+			<div>
+				<table border="1">
+					<tr align="center">
+						<th>Date</th>
+						<th>First Name</th>
+						<th>Last Name</th>
+						<th>Company</th>
+						<th>Street Address</th>
+						<th>City</th>
+						<th>State</th>
+						<th>Zipcode</th>
+						<th>Gallons</th>
+						<th>Price/Gallon</th>
+						<th>Transport Charge</th>
+						<th>Discount Category</th>
+						<th>Percent Discount</th>
+						<th>Total With Discount</th>
+					</tr>
+					{% for order in orders %}
+						<tr align="center">
+							{% for item in order %}
+								<td>{{item}}</td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+	</form>
+</div>

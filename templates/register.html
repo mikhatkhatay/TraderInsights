@@ -1,0 +1,40 @@
+<title>Trader Insights - Profile Management</title>
+<link rel="stylesheet" media="screen" href="static/bootstrap.min.css">
+<link rel="stylesheet" href="static/bootstrap-theme.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container">
+	<h2>Registration</h2>
+	<form action="/register" method="post" role="form">
+		{{ form.csrf }}
+		<div class="form-group">
+			<label for="email">Email:</label>
+			<input type="email" class="form-control" id="email" name="email" placeholder="Email to login">
+ 
+			<label for="password">Password:</label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="Password between 3 and 35 characters">
+
+			<label for="passconf">Repeat Password:</label>
+			<input type="password" class="form-control" id="passconf" name="passconf" placeholder="Passwords must match"> 
+		</div>
+
+		<label for="tos">I accept the Terms of Service:</label>
+		<input type="checkbox" name="tos" value="TOS">
+<br>
+		<button type="submit" class="btn btn-success" name="register" value="Register">Register</button>
+		<button type="submit" class="btn btn-success" name="cancel" value="Cancel">Cancel</button>
+	</form>
+	{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+			{% for message in messages %}
+				{% if "Error" in message[1]: %}
+					<div class="alert alert-warning">
+						{% autoescape false %}
+						{{ message[1] }}
+						{% endautoescape %}
+					</div>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+</div>

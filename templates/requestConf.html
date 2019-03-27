@@ -1,0 +1,50 @@
+<title>Trader Insights - Home Page {{name}} </title>
+        	 	<link rel="stylesheet" media="screen" href="static/bootstrap.min.css">
+        	 	<link rel="stylesheet" href="static/bootstrap-theme.min.css">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container">
+<div>
+<button type="submit" class="btn btn-profile">Profile</button>
+<button type="submit" class="btn btn-Request">Request a Quote</button>
+<button type="submit" class="btn btn-History">Quote History</button>
+<button type="submit" class="btn btn-logout">Logout</button>
+</div>
+<h2>Quote Order Confirmation</h2>
+<form action="{{url_for('quoteConf',name=name, gallons=gallons, deliv_date=deliv_date, deliv_time=deliv_time)}}" method="post" role="form">
+    {{ form.csrf }}
+<div class="form-group">
+<div>
+<h3>Name: {{first}} {{last}}</h3>
+</div>
+<div>
+<h3>Company: {{company}}</h3>
+</div>
+<div>
+<h3>Delivery Address: {{addr}}, {{city}}, {{state}} {{zipcode}}</h3>
+</div>
+<h3>Gallons Requested: {{gallons}}</h3>
+</div>
+<div>
+<h3>Delivery Date: {{deliv_date}} {{deliv_time}}</h3>
+</div>
+
+<button type="submit" class="btn btn-success" name="confirm" value="Confirm">Confirm</button>
+<button type="submit" class="btn btn-success" name="cancel" value="Cancel">Cancel</button>
+</form>{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+ 
+{% for message in messages %}
+{% if "Error" not in message[1]: %}
+<div class="alert alert-info">
+                <strong>Success! </strong> {{ message[1] }}</div>
+{% endif %}
+ 
+{% if "Error" in message[1]: %}
+<div class="alert alert-warning">
+                {{ message[1] }}</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endwith %}
+ 
+</div>

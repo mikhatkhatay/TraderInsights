@@ -1,0 +1,35 @@
+<title>Trader Insights - Confirm Order</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container">
+	<div>
+		<button type="submit" class="btn btn-profile">Profile</button>
+		<button type="submit" class="btn btn-Request">Request a Quote</button>
+		<button type="submit" class="btn btn-History">Quote History</button>
+		<button type="submit" class="btn btn-logout">Logout</button>
+	</div>
+	<h2>Quote Order Confirmation</h2>
+	<form action="{{url_for('req.quoteConf', email=session['email'])}}" method="post" role="form">
+		{{ form.csrf }}
+		<div class="form-group">
+			<div>
+				<h3>Name: {{session['first']}} {{session['last']}}</h3>
+			</div>
+			<div>
+				<h3>Company: {{session['company']}}</h3>
+			</div>
+			<div>
+				<h3>Delivery Address: {{session['addr']}}, {{session['city']}}, {{session['state']}} {{session['zipcode']}}</h3>
+			</div>
+			<div>
+				<h3>Gallons Requested: {{session['gallons']}}</h3>
+			</div>
+			<div>
+				<h3>Delivery Date: {{session['deliv_date']}} {{session['deliv_time']}}</h3>
+			</div>
+		</div>
+		<button type="submit" class="btn btn-success" name="confirm" value="Confirm">Confirm</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="Cancel">Cancel</button>
+	</form>
+</div>

@@ -1,0 +1,20 @@
+<title>Trader Insights - Order Placed</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container">
+	<h2>Quote Order Confirmation</h2>
+	{% with messages = get_flashed_messages(with_categories=true) %}
+		{% if messages %}
+			{% for message in messages %}
+				{% if "Error" not in message[1]: %}
+					<div class="alert alert-warning">
+						<strong>Success!</strong> {{ message[1] }}
+					</div>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+	<h4>Click <a href="{{url_for('userPage', email=session['email'])}}">here</a> to return to home page.</h4>
+</div>

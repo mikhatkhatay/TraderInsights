@@ -1,0 +1,38 @@
+<title>Trader Insights - New User</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static', filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container">
+	<h2>Registration</h2>
+	<form action="{{url_for('auth.signup')}}" method="post" role="form">
+		{{ form.csrf }}
+		<div class="form-group">
+			<label for="email">Email:</label>
+			<input type="email" class="form-control" id="email" name="email" placeholder="Email to login">
+ 
+			<label for="password">Password:</label>
+			<input type="password" class="form-control" id="password" name="password" placeholder="Password between 3 and 35 characters">
+
+			<label for="passconf">Repeat Password:</label>
+			<input type="password" class="form-control" id="passconf" name="passconf" placeholder="Passwords must match"> 
+		</div>
+
+		<label for="tos">I accept the Terms of Service:</label>
+		<input type="checkbox" name="tos" value="TOS">
+<br>
+		<button type="submit" class="btn btn-success" name="register" value="Register">Register</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="Cancel">Cancel</button>
+	</form>
+	{% with messages = get_flashed_messages(category_filter=["error"]) %}
+		{% if messages %}
+			{% for message in messages %}
+				<div class="alert alert-warning">
+					{% autoescape false %}
+					{{ message }}
+					{% endautoescape %}
+				</div>
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+</div>

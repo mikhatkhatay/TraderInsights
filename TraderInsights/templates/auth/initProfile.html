@@ -1,0 +1,50 @@
+<title>Trader Insights - New User Profile</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container">
+	<h2>New User Profile for {{email}}</h2>
+	<form action="{{url_for('auth.initProfile')}}" method="post" role="form">
+		{{ form.csrf }}
+		<div class="form-group">
+			<label for="first">First Name:</label>
+			<input type="text" class="form-control" id="first" name="first" placeholder="John">
+ 
+			<label for="last">Last Name:</label>
+			<input type="text" class="form-control" id="last" name="last" placeholder="Doe">
+
+			<label for="company">Company Name:</label>
+			<input type="text" class="form-control" id="company" name="company" placeholder="John Doe Ltd.">
+
+			<br>
+
+			<label for="addr">Street Address:</label>
+			<input type="text" class="form-control" id="addr" name="addr" placeholder="1234 Main St.">
+
+			<label for="city">City:</label>
+			<input type="text" class="form-control" id="city" name="city" placeholder="Houston">
+
+			<label for="state">State:</label>
+			<input type="text" class="form-control" id="state" name="state" placeholder="TX">
+
+			<label for="zipcode">Zipcode:</label>
+			<input type="text" class="form-control" id="zipcode" name="zipcode" placeholder="77002">
+
+		</div>
+
+		<button type="submit" class="btn btn-success" name="finish" value="Finish">Finish</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="Cancel">Cancel</button>
+	</form>
+	{% with messages = get_flashed_messages(category_filter=["error"]) %}
+		{% if messages %}
+			{% for message in messages %}
+				<div class="alert alert-warning">
+					{% autoescape false %}
+					{{ message }}
+					{% endautoescape %}
+				</div>
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+</div>

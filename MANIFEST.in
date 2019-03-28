@@ -1,0 +1,4 @@
+include TraderInsights/schema.sql
+graft TraderInsights/static
+graft TraderInsights/templates
+global-exclude *.pyc

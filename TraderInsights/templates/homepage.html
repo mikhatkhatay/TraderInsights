@@ -1,0 +1,12 @@
+<title>Trader Insights - Welcome</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container">
+	<h2>Trader Insights</h2>
+	<h4>
+		Welcome to Trader Insights, we use AI to infer the rate of fule based on factors such as location, competitors rate, your purchase history, gallons of fuel requested, and rate fluctuations.
+		<p>To log in to the site, click <a href="{{url_for('auth.login')}}">here</a>.
+		<p>To create an account, click <a href="{{url_for('auth.signup')}}">here</a>.
+	</h4>
+</div>

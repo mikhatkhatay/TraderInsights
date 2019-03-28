@@ -1,0 +1,18 @@
+<title>Trader Insights - {{session['email']}}'s Home Page</title>
+<link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container">
+	<form action="" method="post" role="form">
+		{{ form.csrf }}
+		<div>
+			<button type="submit" class="btn btn-profile" name="profile" value="Profile">Profile</button>
+			<button type="submit" class="btn btn-request" name="request" value="Request">Request a Quote</button>
+			<button type="submit" class="btn btn-history" name="history" value="History">Quote History</button>
+			<button type="submit" class="btn btn-logout" name="logout" value="Logout">Logout</button>
+		</div>
+		<div>
+			<h2>Welcome {{session['first']}}!</h2>
+		</div>
+	</form>
+</div>

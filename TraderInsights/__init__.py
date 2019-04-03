@@ -10,14 +10,16 @@ from flask import Flask, redirect, render_template, url_for, g, request, session
 from wtforms import Form
 from flask_wtf import FlaskForm
 from .userButtons import userButtons
+import psycopg2
+from psycopg2 import pool
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path,'TraderInsights.sqlite'),
     )
-    
+    app.config['postgreSQL_pool'] = psycopg2.pool.SimpleConnectionPool(1,20,
+              "user='ian' password='password' dbname='testdb'")
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:

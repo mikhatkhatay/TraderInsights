@@ -17,6 +17,7 @@ import os, datetime, time
 from flask_wtf import FlaskForm
 from wtforms import Form, PasswordField, SubmitField, BooleanField, TextField, TextAreaField, validators, StringField, IntegerField, DateTimeField, DateField, TimeField
 from wtforms.fields.html5 import EmailField
+import datetime
 import socket
 from .userButtons import userButtons
 
@@ -24,31 +25,40 @@ import random
 
 bp = Blueprint('req', __name__, url_prefix='/request')
 
+def date_check(form, field):
+    min_date = datetime.date.today()+datetime.timedelta(days=1)
+    if field.data < min_date:
+        print("problem")
+        raise validators.ValidationError("Earliest delivery can be scheduled is tomorrow, "+str(min_date))
+
+
 class QuoteForm(FlaskForm):
     gal = IntegerField("Number of Gallons:", validators=[validators.InputRequired(message="Fuel amount is required"),validators.NumberRange(min=1,message="Please enter a valid amount (greater than zero)")])
-    deliv_date = DateField("Delivery Date:", validators=[validators.InputRequired(message="Delivery date is required")])
+    deliv_date = DateField("Delivery Date:", validators=[validators.InputRequired(message="Delivery date is required"), date_check])
     deliv_time = TimeField("Delivery Time:", validators=[validators.InputRequired(message="Delivery time is required")])
 
 @bp.route('/<email>/quote', methods=('GET','POST'))
 @login_required
 def getQuote(email):
-    form=QuoteForm()
+    form=QuoteForm(request.form)
+    print(form)
     if request.method == "POST":
         button = userButtons(request.form)
         if button is not None:
             return button
         
         if "cancel" in request.form:
-            return redirect(url_for("userPage"))
+            return redirect(url_for("userPage", email=email))
         if "proceed" in request.form:
             print(request.form['deliv_date'], request.form['deliv_time'])
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
+                print(form)
                 session['gal'] = request.form["gal"]
                 session['deliv_date'] = request.form["deliv_date"]
                 session['deliv_time'] = request.form["deliv_time"]
                 return redirect(url_for("req.quoteConf", email=email))
             else:
-                if len(form.errors.items()) > 1:
+                if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or len(form.errors.items()) > 1:
                     out = "Error(s) encountered!"
                     for item, error in form.errors.items():
                         if item != "csrf_token":
@@ -65,7 +75,7 @@ def pricing_module(perc_disc):
 @bp.route("/<email>/quote-confirm", methods=["GET","POST"])
 @login_required
 def quoteConf(email):
-    form = Form
+    form = request.form
     if request.method == "POST":
         button = userButtons(request.form)
         if button is not None:
@@ -81,8 +91,8 @@ def quoteConf(email):
             else:
                 session['transport'] = 0.50
             db = get_db()
-            count = db.execute(
-                'SELECT COUNT(*) FROM requests WHERE email = ?', (email,)
+            count = db.cursor().execute(
+                "SELECT COUNT(*) FROM requests WHERE email = '"+email+"'"
             ).fetchone()
             
             discLvl = ""
@@ -104,14 +114,11 @@ def quoteConf(email):
             
             [comp_pr, total] = pricing_module(perc_disc)
             
-            db.execute(
-                'INSERT INTO requests (email, gallons, deliv_date,\
-                price, transport, discLvl, percDisc, compPrice, total)\
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                (session['email'], session['gal'],
-                 session['deliv_date']+' ' +session['deliv_time'],
-                 session['price'], session['transport'],discLvl, perc_disc,
-                 comp_pr, total)
+            """FIGURE THIS OUT"""
+            db.cursor().execute(
+                "INSERT INTO requests (email, gallons, deliv_date,price, transport, discLvl, percDisc, compPrice, total) VALUES ('"+
+                session['email']+"',"+session['gal']+",'"+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+
+                "','"+str(session['transport'])+"','"+discLvl+"',"+str(perc_disc)+","+str(comp_pr)+","+str(total)+")"
             )
             db.commit()
             return redirect(url_for("req.receipt", email=email))

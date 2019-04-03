@@ -15,19 +15,23 @@
 			</div>
 			<h2>Quote Form</h2>
 			<div>
-				<h3>Name: {{session['first']}} {{session['last']}}</h3>
+				<h3>Name: {{session['fullname']}}</h3>
 			</div>
 			<div>
 				<h3>Company: {{session['company']}}</h3>
 			</div>
 			<div>
-				<h3>Delivery Address: {{session['addr']}}, {{session['city']}}, {{session['state']}} {{session['zipcode']}}</h3>
+				<h3>Delivery Address: {{session['addr1']}}<br/>
+					{% if session['addr2']: %}
+						{{session['addr2']}}<br/>
+					{% endif %}
+					{{session['city']}}, {{session['state']}} {{session['zipcode']}}</h3>
 			</div>
 			<label for="gal">Number of Gallons:</label>
 <input type="text" class="form-control" id="gal" name="gal" placeholder="0">
 
 			<label for="deliv_date">Delivery Date:</label>
-<input type="date" class="form-control" id="deliv_date" name="deliv_date" min="2017-01-01" max="2018-12-31">
+<input type="date" class="form-control" id="deliv_date" name="deliv_date">
 
 			<label for="deliv_time">Delivery Time:</label>
 <input type="time" class="form-control" id="deliv_time" name="deliv_time">

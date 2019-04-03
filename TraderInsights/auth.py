@@ -35,13 +35,12 @@ def signup():
         if "register" in request.form:
             email=request.form["email"]
             password=request.form["password"]
-            passconf=request.form["passconf"]
             db = get_db()
             error = None
             
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
-                if db.execute(
-                        'SELECT email FROM users WHERE email = ?', (email,)
+                if db.cursor().execute(
+                        "SELECT email FROM users WHERE email = '"+email+"'"
                 ).fetchone() is not None:
                     session['flash'] = "Error: "+email+" already exists."
                     flash(session['flash'], 'error')
@@ -51,7 +50,7 @@ def signup():
                     session['password'] = generate_password_hash(password)
                     return redirect(url_for("auth.initProfile"))
             else:
-                if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or (len(form.errors.items()) > 1 and "csrf_token" in form.errors):
+                if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or len(form.errors.items()) > 1:
                     out = "Error(s) encountered!"
                     for item, error in form.errors.items():
                         if item != "csrf_token":
@@ -62,16 +61,16 @@ def signup():
 
 def zip_check(form, field):
     if (len(field.data)!=5 and len(field.data)!=9) or not field.data.isdigit:
-        raise validators.ValidationError("Zipcode must be 5 digits or 9 digits long")
+        raise validators.ValidationError("Please input 5- or 9-digit Zipcode")
 
 class RegProfile(FlaskForm):
-    first = StringField("First Name:", validators=[validators.InputRequired("Please input First Name")])
-    last = StringField("Last Name:", validators=[validators.InputRequired("Please input Last Name")])
+    fullname = StringField("Full Name:", validators=[validators.InputRequired("Please input Full Name")])
     company = StringField("Company Name:", validators=[validators.InputRequired("Please input Company")])
-    addr = StringField("Street Address:", validators=[validators.InputRequired("Please input company's Street Address")])
+    addr1 = StringField("Street Address 1:", validators=[validators.InputRequired("Please input company's Street Address")])
+    addr2 = StringField("Street Address 2:", validators=[validators.Optional()])
     city = StringField("City:", validators=[validators.InputRequired("Please input City")])
     state = StringField("State:", validators=[validators.InputRequired("Please input 2-letter State abbreviation"), validators.Length(min=2,max=2,message="State abbreviation must be 2 letters")])
-    zipcode = StringField("Zipcode:", validators=[validators.InputRequired("Please input 5-digit Zipcode"), zip_check])
+    zipcode = StringField("Zipcode:", validators=[validators.InputRequired("Please input 5- or 9-digit Zipcode"), zip_check])
 
 @bp.route('/newprofile', methods=('GET', 'POST'))
 def initProfile():
@@ -81,24 +80,25 @@ def initProfile():
         if "cancel" in request.form:
             return redirect(url_for("auth.login"))
         if "finish" in request.form:
-            first=request.form["first"]
-            last=request.form["last"]
+            fullname=request.form["fullname"]
             company=request.form["company"]
-            addr=request.form["addr"]
+            addr1=request.form["addr1"]
+            addr2=request.form["addr2"]
             city=request.form["city"]
             state=request.form["state"]
             zipcode=request.form["zipcode"]
     
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
-                db.execute(
-                    'INSERT INTO users (email, password, first, last, company, addr, city, state, zipcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    (session['email'], session['password'], first, last, company, addr, city, state.upper(), zipcode)
+                db.cursor().execute(
+                    "INSERT INTO users (email, password, fullname, company, addr1, addr2, city, state, zipcode) "+
+                    "VALUES ('"+session['email']+"', '"+session['password']+"', '"+fullname+"', '"+company+"', '"
+                    +addr1+"', '"+addr2+"', '"+city+"', '"+state.upper()+"', '"+zipcode+"')",
                 )
                 db.commit()
                 session.clear()
                 return redirect(url_for("auth.complete"))
             else:
-                if len(form.errors.items()) > 1:
+                if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or len(form.errors.items()) > 1:
                     out = "Error(s) encountered!"
                     for item, error in form.errors.items():
                         if item != "csrf_token":
@@ -117,9 +117,8 @@ class LoginForm(FlaskForm):
 
 def insertToDB(email, password, reason, ip):
     db = get_db()
-    db.execute(
-        'INSERT INTO attempts (email, password, result, location) VALUES (?, ?, ?, ?)',
-        (email, generate_password_hash(password), reason, ip)
+    db.cursor().execute(
+        "INSERT INTO attempts (email, password, result, ip_address) VALUES ('"+email+"','"+generate_password_hash(password)+"','"+reason+"','"+ip+"')"
     )
     db.commit()
 
@@ -138,8 +137,8 @@ def login():
             
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
                 ip = socket.gethostbyname(socket.gethostname())
-                user = db.execute(
-                    'SELECT * FROM users WHERE email = ?', (email,)
+                user = db.cursor().execute(
+                    "SELECT * FROM users WHERE email = '"+email+"'"
                 ).fetchone()
                 
                 if user is None:
@@ -149,18 +148,16 @@ def login():
                 elif not check_password_hash(user['password'], password):
                     if user['attempts'] < max_attempt-1:
                         insertToDB(email, password, 1, ip)
-                        db.execute(
-                            'UPDATE users SET attempts = ? WHERE email = ?',
-                            (user['attempts']+1,email)
+                        db.cursor().execute(
+                            "UPDATE users SET attempts = "+str(user['attempts']+1)+" WHERE email = '"+email+"'"
                         )
                         db.commit()
                         session['flash'] = "Error: Email or password is incorrect. Try again..."
                         flash(session['flash'],'error')
                     else:
                         insertToDB(email, password, 2, ip)
-                        db.execute(
-                            'UPDATE users SET attempts = ? WHERE email = ?',
-                            (max_attempt,email)
+                        db.cursor().execute(
+                            "UPDATE users SET attempts = "+max_attempt+" WHERE email = '"+email+"'"
                         )
                         db.commit()
                         session['flash'] = "Error: Email or password is incorrect. Account is locked. Contact Customer Support for assistance."
@@ -173,15 +170,13 @@ def login():
                     else:
                         session['flash'] = ''
                         insertToDB(email, password, 3, ip)
-                        db.execute(
-                            'UPDATE users SET attempts = ?, logged = ? WHERE email = ?',
-                            (0,1, email)
+                        db.cursor().execute(
+                            "UPDATE users SET attempts = "+0+", logged = "+1+" WHERE email = '"+email+"'"
                         )
                         db.commit()
                         session.clear()
                         session['email'] = email
-                        [session['first'],
-                         session['last'],
+                        [session['fullname'],
                          session['company'],
                          session['addr'],
                          session['city'],
@@ -190,7 +185,7 @@ def login():
                         
                         return redirect(url_for("userPage", email=email))
             else:
-                if len(form.errors.items()) > 1:
+                if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or len(form.errors.items()) > 1:
                     out = "Error(s) encountered!"
                     for item, error in form.errors.items():
                         if item != "csrf_token":
@@ -207,16 +202,15 @@ def load_logged_in_user():
     if email is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM users WHERE email = ?', (email,)
+        g.user = get_db().cursor().execute(
+            "SELECT * FROM users WHERE email = '"+email+"'"
         ).fetchone()
 
 @bp.route('/logout')
 def logout():
     db = get_db()
-    db.execute(
-        'UPDATE users SET logged = ? WHERE email = ?',
-        (0,session['email'])
+    db.cursor().execute(
+        "UPDATE users SET logged = "+0+" WHERE email = '"+session['email']+"'"
     )
     db.commit()
     session.clear()

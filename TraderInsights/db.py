@@ -14,23 +14,26 @@ from flask.cli import with_appcontext
 def get_db():
     if 'db' not in g:
         g.db = current_app.config['postgreSQL_pool'].getconn()
-    
-    return g.db
+
+    if 'cur' not in g:
+        g.cur = g.db.cursor()
+
+    return (g.db, g.cur)
 
 def close_db(e=None):
     db = g.pop('db', None)
-    
+
     if db is not None:
         current_app.config['postgreSQL_pool'].putconn(db)
 
 def init_db():
-    db = get_db()
+    (db, cur) = get_db()
     
-    drop_tables(db,db.cursor())
+    drop_tables(db,cur)
     
-    setup_db(db,db.cursor())
+    setup_db(db,cur)
     
-    populate_tables(db,db.cursor())
+    populate_tables(db,cur)
 
 def setup_db(conn, cur):
     cur.execute('create table users (\
@@ -53,8 +56,10 @@ def setup_db(conn, cur):
         result numeric,\
         ip_address varchar(50))')
     conn.commit()
+    cur.execute('CREATE SEQUENCE table_name_id_seq')
+    conn.commit()
     cur.execute('create table history (\
-        id serial primary key,\
+        id integer NOT NULL DEFAULT nextval(\'table_name_id_seq\') primary key,\
         email varchar(50) references users(email),\
         full_name varchar(50),\
         company_name varchar(50),\
@@ -72,6 +77,8 @@ def setup_db(conn, cur):
         comp_price numeric,\
         total numeric\
         )')
+    conn.commit()
+    cur.execute("alter sequence table_name_id_seq minvalue 4 start with 4 restart with 4")
     conn.commit()
     cur.execute('create table comp_rate (\
         id serial primary key,\
@@ -100,6 +107,8 @@ def drop_tables(conn,cur):
     conn.commit()
     cur.execute("drop table if exists history")
     conn.commit()
+    cur.execute("drop sequence if exists table_name_id_seq")
+    conn.commit()
     cur.execute("drop table if exists comp_rate")
     conn.commit()
     cur.execute("drop table if exists attempts")
@@ -108,27 +117,34 @@ def drop_tables(conn,cur):
     conn.commit()
 
 def populate_tables(conn,cur):
-    f = open(r'populate_users.csv', 'r')
-    cur.copy_from(f, 'users', sep=',')
-    conn.commit()
-    f.close()
-    f = open(r'populate_comp2017.csv', 'r')
-    cur.copy_from(f, 'comp_rate', sep=',')
-    conn.commit()
-    f.close()
-    f = open(r'populate_comp2018.csv', 'r')
-    cur.copy_from(f, 'comp_rate', sep=',')
-    conn.commit()
-    f.close()
-    f = open(r'populate_flux.csv', 'r')
-    cur.copy_from(f, 'season_flux', sep=',')
-    conn.commit()
-    f.close()
-    f = open(r'populate_history.csv', 'r')
-    cur.copy_from(f, 'history', sep=',')
-    conn.commit()
-    f.close()
-    
+    try:
+        f = open(r'populate_users.csv', 'r')
+        cur.copy_from(f, 'users', sep=',')
+        conn.commit()
+        f.close()
+        f = open(r'populate_comp2017.csv', 'r')
+        cur.copy_from(f, 'comp_rate', sep=',')
+        conn.commit()
+        f.close()
+        f = open(r'populate_comp2018.csv', 'r')
+        cur.copy_from(f, 'comp_rate', sep=',')
+        conn.commit()
+        f.close()
+        f = open(r'populate_flux.csv', 'r')
+        cur.copy_from(f, 'season_flux', sep=',')
+        conn.commit()
+        f.close()
+        f = open(r'populate_history.csv', 'r')
+        cur.copy_from(f, 'history', sep=',')
+        conn.commit()
+        f.close()
+        print("tables populated")
+        cur.execute("SELECT * FROM users")
+        rows = cur.fetchall()
+        for r in rows:
+            print(r)
+    except:
+        print("No data files")
 
 
 

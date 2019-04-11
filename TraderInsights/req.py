@@ -26,10 +26,12 @@ import random
 bp = Blueprint('req', __name__, url_prefix='/request')
 
 def date_check(form, field):
-    min_date = datetime.date.today()+datetime.timedelta(days=1)
+    good_date = datetime.date.today()
+    min_date = datetime.date.today()+datetime.timedelta(days=14)
+    if field.data < good_date:
+        raise validators.ValidationError("Cannot deliver in the past")
     if field.data < min_date:
-        print("problem")
-        raise validators.ValidationError("Earliest delivery can be scheduled is tomorrow, "+str(min_date))
+        raise validators.ValidationError("Please allow at least 10 business days for delivery. Earliest date is "+str(min_date))
 
 
 class QuoteForm(FlaskForm):
@@ -70,7 +72,7 @@ def getQuote(email):
 
 def pricing_module(perc_disc):
     x = random.randint(5000,30000)*(1-perc_disc/100)
-    return [x*1.05, x]
+    return [session['price']*1.05, x]
 
 @bp.route("/<email>/quote-confirm", methods=["GET","POST"])
 @login_required
@@ -90,10 +92,11 @@ def quoteConf(email):
                 session['transport'] = 0
             else:
                 session['transport'] = 0.50
-            db = get_db()
-            count = db.cursor().execute(
-                "SELECT COUNT(*) FROM requests WHERE email = '"+email+"'"
-            ).fetchone()
+            (db, cur) = get_db()
+            cur.execute(
+                "SELECT COUNT(*) FROM history WHERE email = '"+email+"'"
+            )
+            count = cur.fetchone()
             
             discLvl = ""
             perc_disc = 0
@@ -115,10 +118,13 @@ def quoteConf(email):
             [comp_pr, total] = pricing_module(perc_disc)
             
             """FIGURE THIS OUT"""
-            db.cursor().execute(
-                "INSERT INTO requests (email, gallons, deliv_date,price, transport, discLvl, percDisc, compPrice, total) VALUES ('"+
-                session['email']+"',"+session['gal']+",'"+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+
-                "','"+str(session['transport'])+"','"+discLvl+"',"+str(perc_disc)+","+str(comp_pr)+","+str(total)+")"
+            cur.execute(
+                "INSERT INTO history (id,email,full_name,company_name,addr1,addr2,city,state,zipcode, gallons, date,price_per_gal, transport, discount_level, percent_discount, comp_price, total) VALUES (default,'"+session['email']+"','"+session['fullname']+"','"+session['company']+"','"+session['addr1']+"','"+session['addr2']+"','"+session['city']+"','"+session['state']+"','"+session['zipcode']+"','"+session['gal']+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+"','"+str(session['transport'])+"','"+discLvl+"','"+str(perc_disc)+"','"+str(comp_pr)+"','"+str(total)+"')"
+            #
+            #     session['email']+"',"+session['gal']+",'"+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+
+            #                 "','"+str(session['transport'])+"','"+discLvl+"',"+str(perc_disc)+","+str(comp_pr)+","+str(total)+")"
+            #
+            #
             )
             db.commit()
             return redirect(url_for("req.receipt", email=email))

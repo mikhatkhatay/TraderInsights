@@ -1,15 +1,39 @@
+
+<html>
+<head>
+<header>	
+<style type ="text/css">
+        #main-header{
+            text-align:center;
+            background-color:brown;
+            color:black;
+            padding:10px;
+    }
+    #main-footer{
+        text-align: center;
+        font-size:10px;
+    }
+    
+</style>
+</head>
+<body>
+<header id="main-header"> 
+    <h1> Quote Order Confirmation (Receipt) - TraderInsights</h1>
+</header>
+
+
 <title>Trader Insights - Order Placed</title>
 <link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
 <link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <div class="container">
-	<h2>Quote Order Confirmation</h2>
+	<h2>Quote Order Confirmation (Receipt) </h2>
 	{% with messages = get_flashed_messages(with_categories=true) %}
 		{% if messages %}
 			{% for message in messages %}
 				{% if "Error" not in message[1]: %}
-					<div class="alert alert-warning">
+					<div class="alert alert-success">
 						<strong>Success!</strong> {{ message[1] }}
 					</div>
 				{% endif %}
@@ -18,3 +42,46 @@
 	{% endwith %}
 	<h4>Click <a href="{{url_for('userPage', email=session['email'])}}">here</a> to return to home page.</h4>
 </div>
+
+<br>
+	  <br>
+	   <br>
+	    <br>
+	     <br>
+	      <br>
+	       <br>
+	       <br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+
+ <br>
+	   <br>
+	    <br>
+	     <br>
+	      <br>
+	
+  			</br>
+
+ </br>
+
+ <footer id="main-footer">
+
+      <strong><p>Copyright &copy; TraderInsights</p></strong>
+      <style type ="text/css">
+        #main-footer{
+            text-align:baseline;
+            background-color:brown;
+            color:black;
+            padding:50px;
+    }
+    #main-footer{
+        text-align: baseline;
+        font-size:30px;
+    }
+</style>
+    </footer>
+</body>
+</html>

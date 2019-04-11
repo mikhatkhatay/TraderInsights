@@ -1,3 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<style> 
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: red;
+}
+
+* {
+  box-sizing: border-box;
+}
+background-color: black; </style>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Add padding to containers */
+.container {
+  padding: 16px;
+  background-color: white;
+}
+
+/* Full-width input fields */
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  display: inline-block;
+  border: none;
+  background: #f1f1f1;
+}
+
+input[type=text]:focus, input[type=password]:focus {
+  background-color: gray;
+  outline: none;
+}
+
+/* Overwrite default styles of hr */
+hr {
+  border: 1px solid #f1f1f1;
+  margin-bottom: 25px;
+}
+
+/* Set a style for the submit button */
+.registerbtn {
+  background-color: lightblue;
+  color: white;
+  padding: 16px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  opacity: 0.9;
+}
+
+.registerbtn:hover {
+  opacity: 1;
+}
+
+/* Add a blue text color to links */
+a {
+  color: dodgerblue;
+}
+
+/* Set a grey background color and center the text of the "sign in" section */
+.signin {
+  background-color: lightgreen;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+  <style type ="text/css">
+    #main-header{
+      text-align:center;
+      background-color:brown;
+      color:black;
+      padding:10px;
+  }
+
+  #main-footer{
+    text-align: center;
+    font-size:18px;
+  }
+</style>
+
+<header id="main-header"> 
+  <h1> Init Profile  </h1>
+</header>
+
+
+
+
+
+
 <title>Trader Insights - New User Profile</title>
 <link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
 <link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
@@ -8,7 +114,7 @@
 	<form action="{{url_for('auth.initProfile')}}" method="post" role="form">
 		{{ form.csrf }}
 		<div class="form-group">
-			<label for="fullname">First Name:</label>
+			<label for="fullname">Full Name:</label>
 			<input type="text" class="form-control" id="fullname" name="fullname" placeholder="John Doe">
  
 			<label for="company">Company Name:</label>
@@ -25,8 +131,12 @@
 			<label for="city">City:</label>
 			<input type="text" class="form-control" id="city" name="city" placeholder="Houston">
 
-			<label for="state">State:</label>
-			<input type="text" class="form-control" id="state" name="state" placeholder="TX">
+
+			<!-- leaving a space here as I was told to leave a space for the text that comes here from Python -->
+			{{ form.state.label }}<br>
+			{{ form.state() }}<br><br>
+			<!-- <label for="state">State:</label>
+			<input type="text" class="form-control" id="state" name="state" placeholder="TX   ">  leaving a space here as I was told to leave a space for the text that comes here from Python -->
 
 			<label for="zipcode">Zipcode:</label>
 			<input type="text" class="form-control" id="zipcode" name="zipcode" placeholder="77002">
@@ -48,3 +158,26 @@
 		{% endif %}
 	{% endwith %}
 </div>
+
+
+</form>
+
+</body>
+</html>
+  <footer id="main-footer">
+      <strong><p>Copyright &copy; TraderInsights</p></strong>
+      <style type ="text/css">
+        #main-footer{
+            text-align:baseline;
+            background-color:brown;
+            color:black;
+            padding:20px;
+    }
+    #main-footer{
+        text-align: baseline;
+        font-size:30px;
+    }
+</style>
+    </footer>
+</body>
+</html>

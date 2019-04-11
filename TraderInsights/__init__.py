@@ -19,7 +19,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
     )
     app.config['postgreSQL_pool'] = psycopg2.pool.SimpleConnectionPool(1,20,
-              "user='ian' password='password' dbname='testdb'")
+              "user='ian' password='password' dbname='testdb' host='localhost'")
     if test_config is None:
         app.config.from_pyfile('config.py', silent=True)
     else:

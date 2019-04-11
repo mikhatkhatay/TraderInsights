@@ -1,3 +1,37 @@
+
+<html>
+<head>
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+
+<style type ="text/css">
+        #main-header{
+           
+            text-align:center;
+            background-color:brown;
+            color:black;
+            padding:30px;
+
+    }
+    #main-footer{
+        text-align: center;
+        font-size:60px;
+    }
+    
+</style>
+</head>
+<body>
+<header id="main-header"> 
+    <h1> Quote Form - TraderInsights</h1>
+</header>
+
+
+
+ 
+
+
 <title>Trader Insights - Request a Quote</title>
 <link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
 <link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}"
@@ -15,17 +49,18 @@
 			</div>
 			<h2>Quote Form</h2>
 			<div>
-				<h3>Name: {{session['fullname']}}</h3>
+				<h3>Name: {{session['full_name']}}</h3>
 			</div>
 			<div>
 				<h3>Company: {{session['company']}}</h3>
 			</div>
 			<div>
-				<h3>Delivery Address: {{session['addr1']}}<br/>
-					{% if session['addr2']: %}
-						{{session['addr2']}}<br/>
-					{% endif %}
-					{{session['city']}}, {{session['state']}} {{session['zipcode']}}</h3>
+				<h3>Delivery Address: <br>{{session['addr1']}}
+				{% if session['addr2']: %}
+				</br> {{session['addr2']}}
+				{% endif %} 
+				</br> {{session['city']}}, {{session['state']}} {{session['zipcode']}}</h3>
+
 			</div>
 			<label for="gal">Number of Gallons:</label>
 <input type="text" class="form-control" id="gal" name="gal" placeholder="0">
@@ -54,3 +89,47 @@
 		{% endif %}
 	{% endwith %}
 </div>
+
+	 <br>
+	  <br>
+	   <br>
+	    <br>
+	     <br>
+	      <br>
+	       <br>
+	       <br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+  			</br>
+
+
+ </br>
+     <footer id="main-footer">
+
+      <strong><p>Copyright &copy; TraderInsights</p></strong>
+      <style type ="text/css">
+        #main-footer{
+            text-align:baseline;
+            background-color:brown;
+            color:black;
+            padding:50px;
+    }
+    #main-footer{
+        text-align: baseline;
+        font-size:30px;
+    }
+</style>
+      <p> This quote is valid for 30 days from above date </p>
+
+    </footer>
+</body>
+</html>
+
+
+
+
+    
+

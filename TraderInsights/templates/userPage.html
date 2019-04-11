@@ -1,3 +1,28 @@
+
+<html>
+<head>
+<header>	
+<style type ="text/css">
+        #main-header{
+            text-align:center;
+            background-color:brown;
+            color:black;
+            padding:10px;
+    }
+    #main-footer{
+        text-align: center;
+        font-size:10px;
+    }
+    
+</style>
+</head>
+<body>
+<header id="main-header"> 
+    <h1> UserPage - TraderInsights</h1>
+</header>
+
+
+
 <title>Trader Insights - {{session['email']}}'s Home Page</title>
 <link rel="stylesheet" media="screen" href="{{url_for('static',filename='bootstrap.min.css')}}">
 <link rel="stylesheet" href="{{url_for('static',filename='bootstrap-theme.min.css')}}">
@@ -12,7 +37,51 @@
 			<button type="submit" class="btn btn-logout" name="logout" value="Logout">Logout</button>
 		</div>
 		<div>
-			<h2>Welcome {{session['first']}}!</h2>
+			<h2>Welcome {{session['fullname']}}!</h2>
 		</div>
 	</form>
 </div>
+
+
+<br>
+	  <br>
+	   <br>
+	    <br>
+	     <br>
+	      <br>
+	       <br>
+	       <br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+  			<br>
+
+ <br>
+	   <br>
+	    <br>
+	     <br>
+	      <br>
+	
+  			</br>
+
+ </br>
+
+ <footer id="main-footer">
+
+      <strong><p>Copyright &copy; TraderInsights</p></strong>
+      <style type ="text/css">
+        #main-footer{
+            text-align:baseline;
+            background-color:brown;
+            color:black;
+            padding:50px;
+    }
+    #main-footer{
+        text-align: baseline;
+        font-size:30px;
+    }
+</style>
+    </footer>
+</body>
+</html>

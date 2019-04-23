@@ -4,9 +4,6 @@ Team: Fund_Khatkhatay_Zaidi
 File Description: Creating the "database"
 """
 
-import psycopg2
-import sys
-#import sqlite3
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
@@ -26,14 +23,14 @@ def close_db(e=None):
     if db is not None:
         current_app.config['postgreSQL_pool'].putconn(db)
 
-def init_db():
+def init_db(testing=False):
     (db, cur) = get_db()
     
     drop_tables(db,cur)
     
     setup_db(db,cur)
-    
-    populate_tables(db,cur)
+
+    populate_tables(db,cur,testing)
 
 def setup_db(conn, cur):
     cur.execute('create table users (\
@@ -71,34 +68,18 @@ def setup_db(conn, cur):
         gallons numeric,\
         date timestamp,\
         price_per_gal numeric,\
-        transport numeric,\
-        discount_level varchar(50),\
-        percent_discount numeric,\
-        comp_price numeric,\
+        location_factor numeric,\
+        history_factor numeric,\
+        gallons_factor numeric,\
+        comp_profit numeric,\
+        season_flux numeric,\
         total numeric\
         )')
     conn.commit()
     cur.execute("alter sequence table_name_id_seq minvalue 4 start with 4 restart with 4")
     conn.commit()
-    cur.execute('create table comp_rate (\
-        id serial primary key,\
-        name varchar(50),\
-        January numeric,\
-        February numeric,\
-        March numeric,\
-        April numeric,\
-        May numeric,\
-        June numeric,\
-        July numeric,\
-        August numeric,\
-        September numeric,\
-        October numeric,\
-        November numeric,\
-        December numeric,\
-        year numeric)')
-    conn.commit()
     cur.execute('create table season_flux (\
-        season numeric,\
+        month numeric,\
         perc_inc numeric)')
     conn.commit()
 
@@ -116,33 +97,35 @@ def drop_tables(conn,cur):
     cur.execute("drop table if exists users")
     conn.commit()
 
-def populate_tables(conn,cur):
+def populate_tables(conn,cur,testing):
     try:
-        f = open(r'populate_users.csv', 'r')
-        cur.copy_from(f, 'users', sep=',')
-        conn.commit()
-        f.close()
-        f = open(r'populate_comp2017.csv', 'r')
-        cur.copy_from(f, 'comp_rate', sep=',')
-        conn.commit()
-        f.close()
-        f = open(r'populate_comp2018.csv', 'r')
-        cur.copy_from(f, 'comp_rate', sep=',')
-        conn.commit()
-        f.close()
-        f = open(r'populate_flux.csv', 'r')
-        cur.copy_from(f, 'season_flux', sep=',')
-        conn.commit()
-        f.close()
-        f = open(r'populate_history.csv', 'r')
-        cur.copy_from(f, 'history', sep=',')
-        conn.commit()
-        f.close()
+        if testing:
+            f = open(r'test_users.csv', 'r')
+            cur.copy_from(f, 'users', sep=',')
+            conn.commit()
+            f.close()
+            f = open(r'test_flux.csv', 'r')
+            cur.copy_from(f, 'season_flux', sep=',')
+            conn.commit()
+            f.close()
+            cur.execute("SELECT * FROM users")
+            rows = cur.fetchall()
+            for r in rows:
+                print(r)
+        else:
+            f = open(r'populate_users.csv', 'r')
+            cur.copy_from(f, 'users', sep=',')
+            conn.commit()
+            f.close()
+            f = open(r'populate_flux.csv', 'r')
+            cur.copy_from(f, 'season_flux', sep=',')
+            conn.commit()
+            f.close()
+            # f = open(r'populate_history.csv', 'r')
+            # cur.copy_from(f, 'history', sep=',')
+            # conn.commit()
+            # f.close()
         print("tables populated")
-        cur.execute("SELECT * FROM users")
-        rows = cur.fetchall()
-        for r in rows:
-            print(r)
     except:
         print("No data files")
 

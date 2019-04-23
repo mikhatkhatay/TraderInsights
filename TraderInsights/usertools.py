@@ -6,19 +6,14 @@ File Description: All methods and classes relating to user tools (profile and
 """
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, redirect, render_template, request, session, url_for
 )
-from werkzeug.exceptions import abort
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 from TraderInsights.auth import login_required, zip_check
 from TraderInsights.db import get_db
 
-from flask import Flask, abort
-import os, datetime, time
 from flask_wtf import FlaskForm
-from wtforms import Form, PasswordField, SubmitField, BooleanField, TextAreaField, validators, StringField, IntegerField, DateTimeField, DateField, TimeField, SelectField
-from wtforms.fields.html5 import EmailField
-import socket
+from wtforms import PasswordField, validators, StringField, SelectField
 from .userButtons import userButtons
 from .auth import states
 
@@ -52,18 +47,18 @@ def manageProfile(email):
             
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
                 cur.execute(
-                    'SELECT password FROM users WHERE email = ?', (email,)
+                    "SELECT password FROM users WHERE email = '"+email+"'"
                 )
                 pw = cur.fetchone()
-                print("\n\n")
-                print([pw[x] for x in range(len(pw))])
+                # print("\n\n")
+                # print([pw[x] for x in range(len(pw))])
                 currpass=request.form["currpass"]
                 """confirm password with database"""
                 if check_password_hash(pw[0],currpass):
                     session['fullname']=fullname=request.form["fullname"]
                     session['company']=company=request.form["company"]
-                    session['addr1']=addr=request.form["addr1"]
-                    session['addr2']=addr=request.form["addr2"]
+                    session['addr1']=addr1=request.form["addr1"]
+                    session['addr2']=addr2=request.form["addr2"]
                     session['city']=city=request.form["city"]
                     session['state']=state=request.form["state"]
                     session['zipcode']=zipcode=request.form["zipcode"]
@@ -103,8 +98,13 @@ def getUserQuotes():
         "SELECT * FROM history WHERE email = '"+session['email']+"'"
     )
     orders = cur.fetchall()
-    x = [10,2,3,4,5,6,7,8,9,11,12,13,14,15,16]
-    return [(order[i] for i in x) for order in orders]
+    x = [10, 2, 3, 4, 5, 6, 7, 8, 9, 14, 12, 13, 16, 11, 17]
+    # print(len(orders))
+    # for order in orders:
+    #     print(order)
+        # print([order[i] for i in x])
+        # print("")
+    return [[order[i] for i in x] for order in orders]
 
 @bp.route("/<email>/history", methods=["GET","POST"])
 @login_required
@@ -112,7 +112,7 @@ def getHistory(email):
     form = FlaskForm
     
     orders = getUserQuotes()
-    print(orders)
+    # print(orders)
     if request.method == "POST":
         button = userButtons(request.form)
         if button is not None:

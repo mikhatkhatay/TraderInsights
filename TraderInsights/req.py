@@ -7,27 +7,20 @@ File Description: All methods and classes relating to quote request and confirma
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
-from werkzeug.exceptions import abort
-from werkzeug.security import check_password_hash, generate_password_hash
 from TraderInsights.auth import login_required
 from TraderInsights.db import get_db
 
-from flask import Flask, abort
-import os, datetime, time
 from flask_wtf import FlaskForm
-from wtforms import Form, PasswordField, SubmitField, BooleanField, TextField, TextAreaField, validators, StringField, IntegerField, DateTimeField, DateField, TimeField
-from wtforms.fields.html5 import EmailField
+from wtforms import validators, IntegerField, DateField, TimeField
 import datetime
-import socket
 from .userButtons import userButtons
-
-import random
 
 bp = Blueprint('req', __name__, url_prefix='/request')
 
 def date_check(form, field):
     good_date = datetime.date.today()
     min_date = datetime.date.today()+datetime.timedelta(days=14)
+    # print(good_date, min_date, field.data)
     if field.data < good_date:
         raise validators.ValidationError("Cannot deliver in the past")
     if field.data < min_date:
@@ -43,7 +36,7 @@ class QuoteForm(FlaskForm):
 @login_required
 def getQuote(email):
     form=QuoteForm(request.form)
-    print(form)
+    # print(form)
     if request.method == "POST":
         button = userButtons(request.form)
         if button is not None:
@@ -52,12 +45,13 @@ def getQuote(email):
         if "cancel" in request.form:
             return redirect(url_for("userPage", email=email))
         if "proceed" in request.form:
-            print(request.form['deliv_date'], request.form['deliv_time'])
+            # print(request.form['deliv_date'], request.form['deliv_time'])
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
-                print(form)
+                # print(form)
                 session['gal'] = request.form["gal"]
                 session['deliv_date'] = request.form["deliv_date"]
                 session['deliv_time'] = request.form["deliv_time"]
+                pricing_module()
                 return redirect(url_for("req.quoteConf", email=email))
             else:
                 if (len(form.errors.items()) == 1 and "csrf_token" not in form.errors) or len(form.errors.items()) > 1:
@@ -70,9 +64,42 @@ def getQuote(email):
     
     return render_template("request/quote.html", form=form, session=session)
 
-def pricing_module(perc_disc):
-    x = random.randint(5000,30000)*(1-perc_disc/100)
-    return [session['price']*1.05, x]
+def pricing_module():
+    curr_price = 1.50
+    if 'location' not in session:
+        session['location'] = 0
+        if session['state'] == 'TX':
+            session['location'] = 0.02
+        else:
+            session['location'] = 0.04
+
+    session['hist_disc'] = 0
+    [conn, cur] = get_db()
+    cur.execute("SELECT COUNT(*) FROM history WHERE email='{}'".format(session['email']))
+    past_orders = cur.fetchone()[0]
+    if past_orders == 0:
+        session['hist_disc'] = 0
+    else:
+        session['hist_disc'] = 0.01
+
+    session['gal_disc'] = 0
+    if int(session['gal']) > 1000:
+        session['gal_disc'] = 0.02
+    else:
+        session['gal_disc'] = 0.03
+
+    session['comp_profit'] = 0.10
+    # print(session['deliv_date'].split('-')[1])
+    cur.execute("SELECT perc_inc FROM season_flux WHERE month='{}'".format(session['deliv_date'].split('-')[1]))
+    session['rate_flux'] = float(cur.fetchone()[0])
+    # print(session['rate_flux'])
+    # print("location",type(session['location']))
+    # print("hist_disc",type(session['hist_disc']))
+    # print("gal_disc",type(session['gal_disc']))
+    # print("margin",type(session['comp_profit']))
+    # print("rate_flux",type(session['rate_flux']))
+    session['price'] = curr_price * (1 + session['location'] - session['hist_disc'] + session['gal_disc'] + session['comp_profit'] + session['rate_flux'])
+    session['total'] = session['price'] * float(session['gal'])
 
 @bp.route("/<email>/quote-confirm", methods=["GET","POST"])
 @login_required
@@ -86,45 +113,9 @@ def quoteConf(email):
         if "cancel" in request.form:
             return redirect(url_for("userPage", email=email))
         if "confirm" in request.form:
-            
-            session['price'] = 3.999
-            if session['state'] == 'TX':
-                session['transport'] = 0
-            else:
-                session['transport'] = 0.50
             (db, cur) = get_db()
             cur.execute(
-                "SELECT COUNT(*) FROM history WHERE email = '"+email+"'"
-            )
-            count = cur.fetchone()
-            
-            discLvl = ""
-            perc_disc = 0
-            if count[0] < 5:
-                discLvl = "<5"
-            elif 4 < count[0] < 11:
-                discLvl = "5-10"
-                perc_disc = 1
-            elif 10 < count[0] < 21:
-                discLvl = "11-20"
-                perc_disc = 1.5
-            elif 20 < count[0] < 51:
-                discLvl = "21-50"
-                perc_disc = 3
-            else:
-                discLvl = ">50"
-                perc_disc = 5
-            
-            [comp_pr, total] = pricing_module(perc_disc)
-            
-            """FIGURE THIS OUT"""
-            cur.execute(
-                "INSERT INTO history (id,email,full_name,company_name,addr1,addr2,city,state,zipcode, gallons, date,price_per_gal, transport, discount_level, percent_discount, comp_price, total) VALUES (default,'"+session['email']+"','"+session['fullname']+"','"+session['company']+"','"+session['addr1']+"','"+session['addr2']+"','"+session['city']+"','"+session['state']+"','"+session['zipcode']+"','"+session['gal']+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+"','"+str(session['transport'])+"','"+discLvl+"','"+str(perc_disc)+"','"+str(comp_pr)+"','"+str(total)+"')"
-            #
-            #     session['email']+"',"+session['gal']+",'"+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+str(session['price'])+
-            #                 "','"+str(session['transport'])+"','"+discLvl+"',"+str(perc_disc)+","+str(comp_pr)+","+str(total)+")"
-            #
-            #
+                "INSERT INTO history (id,email,full_name,company_name,addr1,addr2,city,state,zipcode, gallons, date, price_per_gal, location_factor, history_factor, gallons_factor, comp_profit, season_flux, total) VALUES (default,'"+session['email']+"','"+session['fullname']+"','"+session['company']+"','"+session['addr1']+"','"+session['addr2']+"','"+session['city']+"','"+session['state']+"','"+session['zipcode']+"','"+session['gal']+"','"+session['deliv_date']+" "+session['deliv_time']+":00"+"','"+"{0:.3f}".format(session['price'])+"','"+str(session['location'])+"','"+str(session['hist_disc'])+"','"+str(session['gal_disc'])+"','"+str(session['comp_profit'])+"','"+str(session['rate_flux'])+"','"+"{0:.2f}".format(session['total'])+"')"
             )
             db.commit()
             return redirect(url_for("req.receipt", email=email))

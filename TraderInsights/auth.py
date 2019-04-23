@@ -6,13 +6,13 @@ File Description: All methods and classes relating to user authorization
 
 import functools
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response
+    Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from TraderInsights.db import get_db
 
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, BooleanField, TextField, validators, StringField, SelectField
+from wtforms import PasswordField, BooleanField, validators, StringField, SelectField
 from wtforms.fields.html5 import EmailField
 import socket
 
@@ -29,7 +29,7 @@ class SignUp(FlaskForm):
 def signup():
     form = SignUp(request.form)
     if request.method == "POST":
-        print(form.errors)
+        # print(form.errors)
         if "cancel" in request.form:
             return redirect(url_for("auth.login"))
         if "register" in request.form:
@@ -43,7 +43,7 @@ def signup():
                     "SELECT email FROM users WHERE email = '" + email + "'"
                 )
                 row = cur.fetchone()
-                print("does "+email+" exist?", row)
+                # print("does "+email+" exist?", row)
                 if row is not None:
                     session['flash'] = "Error: "+email+" already exists."
                     flash(session['flash'], 'error')
@@ -85,7 +85,7 @@ class RegProfile(FlaskForm):
 
 @bp.route('/newprofile', methods=('GET', 'POST'))
 def initProfile():
-    print(request.form)
+    # print(request.form)
     form = RegProfile(request.form)
     (db, cur) = get_db()
     if request.method == "POST":
@@ -102,7 +102,7 @@ def initProfile():
     
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
                 cur.execute(
-                    "INSERT INTO users (email, password, full_name, company, addr1, addr2, city, state, zipcode) "+
+                    "INSERT INTO users (email, password, full_name, company_name, addr1, addr2, city, state, zipcode) "+
                     "VALUES ('"+session['email']+"', '"+session['password']+"', '"+fullname+"', '"+company+"', '"
                     +addr1+"', '"+addr2+"', '"+city+"', '"+state.upper()+"', '"+zipcode+"')",
                 )
@@ -137,24 +137,25 @@ def insertToDB(email, password, reason, ip):
 @bp.route("/login", methods=("GET", "POST"))
 def login():
     form = LoginForm(request.form)
-    print(form.errors)
-    print(generate_password_hash('password'))
+    # print(form.errors)
+    # print(generate_password_hash('password'))
     if request.method == "POST":
         if "register" in request.form:
             return redirect(url_for("auth.signup"))
         if "login" in request.form:
-            print(request.form)
+            # print(request.form)
             password=request.form["password"]
             email=request.form["email"]
             (db, cur) = get_db()
             
             if form.validate() or (len(form.errors.items()) == 1 and "csrf_token" in form.errors):
                 ip = socket.gethostbyname(socket.gethostname())
+                # print("flag user check")
                 cur.execute(
                     "SELECT * FROM users WHERE email = '"+email+"'"
                 )
                 user = cur.fetchone()
-                print(user)
+                # print(user)
                 if user is None:
                     insertToDB(email, password, 0, ip)
                     session['flash'] = "Error: Email or password is incorrect. Try again..."
@@ -171,7 +172,7 @@ def login():
                     else:
                         insertToDB(email, password, 2, ip)
                         cur.execute(
-                            "UPDATE users SET number_of_attempts = "+max_attempt+" WHERE email = '"+email+"'"
+                            "UPDATE users SET number_of_attempts = "+str(max_attempt)+" WHERE email = '"+email+"'"
                         )
                         db.commit()
                         session['flash'] = "Error: Email or password is incorrect. Account is locked. Contact Customer Support for assistance."
@@ -207,7 +208,7 @@ def login():
                             out += "<br/>"+error[0]
                     session['flash'] =  out
                     flash(session['flash'],'error')
-            print(form.errors)
+            # print(form.errors)
     return render_template("auth/login.html", form=form)
 
 @bp.before_app_request
@@ -230,8 +231,9 @@ def logout():
         "UPDATE users SET logged_in = 0 WHERE email = '"+session['email']+"'"
     )
     db.commit()
+    db.close()
     session.clear()
-    print(session)
+    # print(session)
     return redirect(url_for('welcome'))
 
 def login_required(view):

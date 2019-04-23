@@ -5,9 +5,7 @@ Created on Sun Mar 24 17:41:01 2019
 @author: M. Ibrahim
 """
 
-from SD_website import create_app
-from flask import g, redirect, url_for, session, render_template
-from wtforms import Form
+from TraderInsights import create_app
 
 def test_config():
     assert not create_app().testing

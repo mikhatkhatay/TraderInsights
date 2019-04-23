@@ -1,0 +1,2 @@
+admin@mail.com,pbkdf2:sha256:50000$qyiA8lZx$71201250e6211534360223ed5a2938beb2c4d40e70c0f8df6d6d7e94fd238346,John Doe,John Doe Ltd.,1234 Main St.,,Houston,TX,77002,0,0
+python@mail.com,pbkdf2:sha256:50000$NJ2XjRw4$acbe07c42bb739107b475c5f4535e413b5f0f7f0f89d0bf8a44c19ed646b71e8,Johann Bach,Bach Co.,Somewhere in Germany,,Eisenach Thuringia DEU,AZ,99817,0,0

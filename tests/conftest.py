@@ -9,27 +9,17 @@ import os, tempfile, pytest
 from TraderInsights import create_app
 from TraderInsights.db import get_db, init_db
 
-with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
-    _data_sql = f.read().decode('utf8')
-
 @pytest.fixture
 def app():
-    db_fd, db_path = tempfile.mkstemp()
     
     app = create_app({
-        'TESTING': False,
-        'DATABASE': db_path,
-        'WTF_CSRF_ENABLED': False
+        'TESTING': True,
     })
-    
+
     with app.app_context():
-        init_db()
-        get_db().executescript(_data_sql)
-    
+        init_db(True)
+
     yield app
-    
-    os.close(db_fd)
-    os.unlink(db_path)
 
 @pytest.fixture
 def client(app):
@@ -43,12 +33,20 @@ class AuthActions(object):
     def __init__(self,client):
         self._client = client
     
-    def login(self, email='admin@mail.com', password = 'password'):
-        return self._client.post(
-            '/auth/login',
-            data=dict(email=email, password=password)
-        )
-    
+    def login(self, email='admin@mail.com', password='password', login='Login'):
+        if login=='Login':
+            return self._client.post(
+                '/auth/login',
+                data=dict(email=email, password=password, login=login),
+                follow_redirects=True
+            )
+        else:
+            return self._client.post(
+                '/auth/login',
+                data=dict(register=login),
+                follow_redirects=True
+            )
+
     def logout(self):
         return self._client.get('/auth/logout')
 
